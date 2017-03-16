@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "client.py", line 20, in <module>
+  File "client.py", line 18, in main
+  File "tkMessageBox.pyc", line 91, in showerror
+  File "tkMessageBox.pyc", line 72, in _show
+  File "tkCommonDialog.pyc", line 48, in show
+  File "Tkinter.pyc", line 1121, in _options
+  File "Tkinter.pyc", line 80, in _stringify
+UnicodeDecodeError: 'ascii' codec can't decode byte 0xea in position 24: ordinal not in range(128)
+Traceback (most recent call last):
+  File "client.py", line 20, in <module>
+  File "client.py", line 18, in main
+  File "tkMessageBox.pyc", line 91, in showerror
+  File "tkMessageBox.pyc", line 72, in _show
+  File "tkCommonDialog.pyc", line 48, in show
+  File "Tkinter.pyc", line 1121, in _options
+  File "Tkinter.pyc", line 80, in _stringify
+UnicodeDecodeError: 'ascii' codec can't decode byte 0xea in position 24: ordinal not in range(128)
+Traceback (most recent call last):
+  File "client.py", line 20, in <module>
+  File "client.py", line 18, in main
+  File "tkMessageBox.pyc", line 91, in showerror
+  File "tkMessageBox.pyc", line 72, in _show
+  File "tkCommonDialog.pyc", line 48, in show
+  File "Tkinter.pyc", line 1121, in _options
+  File "Tkinter.pyc", line 80, in _stringify
+UnicodeDecodeError: 'ascii' codec can't decode byte 0xea in position 24: ordinal not in range(128)
