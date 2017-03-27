@@ -25,3 +25,13 @@ Traceback (most recent call last):
   File "Tkinter.pyc", line 1121, in _options
   File "Tkinter.pyc", line 80, in _stringify
 UnicodeDecodeError: 'ascii' codec can't decode byte 0xea in position 24: ordinal not in range(128)
+Exception in Tkinter callback
+Traceback (most recent call last):
+  File "Tkinter.pyc", line 1470, in __call__
+  File "ClientGUI.pyc", line 1988, in CloseProgram
+  File "tkMessageBox.pyc", line 91, in showerror
+  File "tkMessageBox.pyc", line 72, in _show
+  File "tkCommonDialog.pyc", line 48, in show
+  File "Tkinter.pyc", line 1121, in _options
+  File "Tkinter.pyc", line 80, in _stringify
+UnicodeDecodeError: 'ascii' codec can't decode byte 0xcf in position 0: ordinal not in range(128)
