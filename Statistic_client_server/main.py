@@ -79,6 +79,17 @@ plt.xticks(index + bar_width / 2, user_logins)
 
 ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
 
+def autolabel(rects):
+    for rect in rects:
+        height = rect.get_height()
+        ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                '%d' % int(height),
+                ha='center', va='bottom')
+
+autolabel(rects1)
+autolabel(rects2)
+autolabel(rects3)
+
 plt.legend()
 
 plt.tight_layout()
