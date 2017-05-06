@@ -72,8 +72,8 @@ rects1 = plt.bar(index, means_men, bar_width, alpha=opacity, color='b',  error_k
 rects2 = plt.bar(index + bar_width, means_women, bar_width, alpha=opacity, color='r', error_kw=eror_config, label='To')
 rects3 = plt.bar(index + bar_width*2, means_deleted, bar_width, alpha=opacity, color='g', error_kw=eror_config, label='Deleted')
 
-plt.xlabel('Group')
-plt.ylabel('Scores')
+plt.xlabel('Users')
+plt.ylabel('Count')
 plt.title('Scotres by group and gender')
 plt.xticks(index + bar_width / 2, user_logins)
 plt.legend()
