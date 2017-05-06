@@ -288,10 +288,10 @@ def ReceivingMessages(Client, addr, USERNAME):  # Прием данных от �
                             elif To == Id:  # Если хост - получатель
                                 UsersCur.execute("UPDATE Messages SET _To = 0 WHERE Id='" + Msg[1] + "'")
                                 To = 0
-                            if To == 0 and From == 0:  # Сообщение удалено у обоих пользователей
-                                DelMessage(UsersDB, UsersCur, Msg[1])  # Удаляем сообщение из базы
-                                SendData(Client, 'OK')
-                                continue
+                            #if To == 0 and From == 0:  # Сообщение удалено у обоих пользователей
+                                # DelMessage(UsersDB, UsersCur, Msg[1])  # Удаляем сообщение из базы
+                                # SendData(Client, 'OK')
+                                # continue
                             UsersDB.commit()  # сохраняем изменения
                             SendData(Client, 'OK')
                         except Exception, e:
@@ -822,7 +822,7 @@ def CommandInterpreter():
 def main():
     # Настройки сервера
     global KEYS
-    HOST = '0.0.0.0'
+    HOST = ''
     PORT = 21564
     ADDR = (HOST, PORT)
     tcpSerSock = None
