@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sqlite3
+from matplotlib.ticker import FormatStrFormatter
 from time import sleep
 
 
@@ -68,7 +69,6 @@ opacity = 0.4
 eror_config = {'ecolor': '0.3'}
 
 rects1 = plt.bar(index, means_men, bar_width, alpha=opacity, color='b',  error_kw=eror_config, label='From')
-
 rects2 = plt.bar(index + bar_width, means_women, bar_width, alpha=opacity, color='r', error_kw=eror_config, label='To')
 rects3 = plt.bar(index + bar_width*2, means_deleted, bar_width, alpha=opacity, color='g', error_kw=eror_config, label='Deleted')
 
@@ -76,6 +76,20 @@ plt.xlabel('Users')
 plt.ylabel('Count')
 plt.title('Scotres by group and gender')
 plt.xticks(index + bar_width / 2, user_logins)
+
+ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
+
+def autolabel(rects):
+    for rect in rects:
+        height = rect.get_height()
+        ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                '%d' % int(height),
+                ha='center', va='bottom')
+
+autolabel(rects1)
+autolabel(rects2)
+autolabel(rects3)
+
 plt.legend()
 
 plt.tight_layout()
