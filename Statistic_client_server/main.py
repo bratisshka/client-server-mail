@@ -6,7 +6,6 @@ from time import sleep
 
 
 def update_statistic(t):
-
     ids = set([x[3] for x in t]).union(set([x[4] for x in t]))
     # print(ids)
     user_logins = []
@@ -31,6 +30,7 @@ def update_statistic(t):
         all_messages_to.append(messages_to)
         all_messages_delete.append(messages_deleted)
     return user_logins, all_messages_from, all_messages_to, all_messages_delete
+
 
 UsersDB = sqlite3.connect("..\Server\Bin\DB\\USERS.db")
 UsersCur = UsersDB.cursor()
@@ -101,51 +101,31 @@ n_groups = len(user_logins)
 from pandas import DataFrame
 
 change = all_messages_from
+messages_to = all_messages_to
 user = user_logins
+change = [[a, b, c] for a, b, c in zip(all_messages_from, all_messages_to, all_messages_delete)]
+grad = DataFrame(change, columns=['Send', 'Recieved', 'Deleted'])
 
-grad = DataFrame({'change': change, 'user': user})
-
-change = grad.change[grad.change > 0]
-user = grad.user[grad.change > 0]
 pos = np.arange(len(change))
 
-plt.title('Scotres by group and gender')
-plt.barh(pos, change)
-plt.xlabel('Count')
+grad.plot(
+    kind='barh',
+    title='Scotres by users');
 
-#add the numbers to the side of each bar
-for p, c, ch in zip(pos, user, change):
-    plt.annotate(str(ch), xy=(ch + 0.05, p), va='center')
+# add the numbers to the side of each bar
+for p, c, ch in zip(pos, user, all_messages_from):
+    plt.annotate(str(ch), xy=(ch + 0.05, p - 0.2), va='center')
+for p, c, ch in zip(pos, user, all_messages_to):
+    plt.annotate(str(ch), xy=(ch + 0.05, p - 0.01), va='center')
+for p, c, ch in zip(pos, user, all_messages_delete):
+    plt.annotate(str(ch), xy=(ch + 0.05, p + 0.2), va='center')
 
-#cutomize ticks
+# cutomize ticks
 ticks = plt.yticks(pos, user)
 xt = plt.xticks()[0]
 plt.xticks(xt, [' '] * len(xt))
 
-#minimize chartjunk
-def remove_border(axes=None, top=False, right=False, left=True, bottom=True):
-    ax = axes or plt.gca()
-    ax.spines['top'].set_visible(top)
-    ax.spines['right'].set_visible(right)
-    ax.spines['left'].set_visible(left)
-    ax.spines['bottom'].set_visible(bottom)
-
-    # turn off all ticks
-    ax.yaxis.set_ticks_position('none')
-    ax.xaxis.set_ticks_position('none')
-
-    # now re-enable visibles
-    if top:
-        ax.xaxis.tick_top()
-    if bottom:
-        ax.xaxis.tick_bottom()
-    if left:
-        ax.yaxis.tick_left()
-    if right:
-        ax.yaxis.tick_right()
-
-#minimize chartjunk
-remove_border(left=False, bottom=False)
-plt.grid(axis = 'x', color ='white', linestyle='-')
+# minimize chartjunk
+plt.grid(axis='x', color='white', linestyle='-')
 
 plt.show()
