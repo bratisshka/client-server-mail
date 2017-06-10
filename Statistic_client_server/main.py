@@ -103,7 +103,7 @@ from pandas import DataFrame
 change = all_messages_from
 user = user_logins
 
-grad = DataFrame({'change' : change, 'user': user})
+grad = DataFrame({'change': change, 'user': user})
 
 change = grad.change[grad.change > 0]
 user = grad.user[grad.change > 0]
@@ -115,10 +115,10 @@ plt.xlabel('Count')
 
 #add the numbers to the side of each bar
 for p, c, ch in zip(pos, user, change):
-    plt.annotate(str(ch), xy=(ch + 1, p + .15), va='center')
+    plt.annotate(str(ch), xy=(ch + 0.05, p), va='center')
 
 #cutomize ticks
-ticks = plt.yticks(pos + .5, user)
+ticks = plt.yticks(pos, user)
 xt = plt.xticks()[0]
 plt.xticks(xt, [' '] * len(xt))
 
