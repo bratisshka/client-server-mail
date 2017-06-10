@@ -114,11 +114,11 @@ grad.plot(
 
 # add the numbers to the side of each bar
 for p, c, ch in zip(pos, user, all_messages_from):
-    plt.annotate(str(ch), xy=(ch + 0.05, p - 0.2), va='center')
+    plt.annotate(str(ch), xy=(ch + 0.05, p - 0.19), va='center')
 for p, c, ch in zip(pos, user, all_messages_to):
     plt.annotate(str(ch), xy=(ch + 0.05, p - 0.01), va='center')
 for p, c, ch in zip(pos, user, all_messages_delete):
-    plt.annotate(str(ch), xy=(ch + 0.05, p + 0.2), va='center')
+    plt.annotate(str(ch), xy=(ch + 0.05, p + 0.165), va='center')
 
 # cutomize ticks
 ticks = plt.yticks(pos, user)
