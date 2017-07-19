@@ -4,6 +4,7 @@ import os, sys
 from socket import *
 import ssl # Зашифрованный канал
 import threading # Потоки
+from multiprocessing import Array, Manager
 import time
 import sqlite3 # DataBase
 import datetime
@@ -21,6 +22,9 @@ import matplotlib.animation as animation
 from matplotlib.dates import date2num
 from matplotlib.dates import num2date
 from matplotlib.ticker import FuncFormatter
+
+import Captcha
+import CryptUnit
 from time import sleep
 from config import get_command, set_command
 from Server import GUIUsers
@@ -50,7 +54,8 @@ CommandSet = [
     "Plot",
     "Statistic",
 	"Guiusers"
-    "Exit" # Stop server
+    "Exit", # Stop server
+	"Admin"
 ]
 FilterQuest = ['Reply']
 CashSize = 10
@@ -841,23 +846,6 @@ def CommandInterpreter():
                       mode='expand',
                       borderaxespad=0,
                       ncol=3)
-##
-##                    XVal.pop(0)
-##                    XVal.append(date2num(datetime.datetime.now() + datetime.timedelta(seconds = time_interval)))
-##                    YVal[0].pop(0)
-##                    YVal[0].append(tmpBytesCount[0])
-##                    YVal[1].pop(0)
-##                    YVal[1].append(tmpBytesCount[1])
-##                    tmpBytesCount = [0, 0]
-##                    Axis.clear()
-##                    Axis.xaxis.set_major_formatter(DF('%H:%M:%S'))
-##                    Axis.plot_date(XVal, YVal[0], "r-", label = "INPUT")
-##                    Axis.plot_date(XVal, YVal[1], "g-", label = "OUTPUT")
-##                    Axis.plot(XVal[0], [0], "b-", label = "CONNECTIONS: " + str(len(OnLineClients)))
-##                    Axis.legend(loc=u'upper center',
-##                          mode='expand',
-##                          borderaxespad=0,
-##                          ncol=3)
                 ani = animation.FuncAnimation(fig, animate, interval=1000)
                 plt.show()
             elif CommandNum == 13: # вывод статистики
@@ -939,6 +927,21 @@ def CommandInterpreter():
             elif CommandNum == 15: # Exit
                 Worked = False
                 return
+			elif CommandNum == 16:  # test
+                # запускаем параллельные процессы, по документации необходимо, чтобы функции были в корне
+                # tmpBytesCount задаются через multiprocessing.Manager для обмена данными между процессами
+                t = multiprocessing.Process(target=runPlot, args=(tmpBytesCount,))
+                t.daemon = True
+                t.start()
+                r = multiprocessing.Process(target=runStatistic, args=())
+                r.daemon = True
+                r.start()
+                # Tkinter не захотел так включаться, пришлось воткнуть в основной поток
+                runGUIUsers()
+                # p = multiprocessing.Process(target=runGUIUsers, args=())
+                # p.daemon = True
+                # p.start()
+                # threading._start_new_thread(runTest, ())
         except Exception, e:
             print 'ERROR:', e.args # Соединение было разорвано удаленным узлом
             raw_input("Press ENTER to continue")
