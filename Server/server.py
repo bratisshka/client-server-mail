@@ -886,6 +886,44 @@ def CommandInterpreter():
 						all_messages_to.append(messages_to)
 						all_messages_delete.append(messages_deleted)
 					return user_logins, all_messages_from, all_messages_to, all_messages_delete
+				def runStatistic():  # отображение статистики отправленных/полученных сообщений
+					UsersDB = sqlite3.connect("..\Server\Bin\DB\USERS.db")
+					UsersCur = UsersDB.cursor()
+
+					prev_t = []
+					# print("{:10} {:5} {:8} {:8}".format("USER", "SEND", "RECIEVED", "DELETED"))
+
+					UsersCur = UsersDB.cursor()  # создание курсора
+					t = UsersCur.execute("SELECT * FROM messages").fetchall()
+					diff = list(set(t) - set(prev_t))
+					prev_t = t
+					user_logins, all_messages_from, all_messages_to, all_messages_delete = update_statistic(diff,
+																											UsersCur)  # получение статистик
+					UsersCur.close()
+
+					n_groups = len(user_logins)
+
+					from pandas import DataFrame  # формирование графика
+					change = all_messages_from
+					messages_to = all_messages_to
+					user = user_logins
+					change = [[a, b, c] for a, b, c in zip(all_messages_from, all_messages_to, all_messages_delete)]
+					grad = DataFrame(change, columns=['Send', 'Recieved', 'Deleted'])
+					pos = np.arange(len(change))
+
+					grad.plot(kind='barh', title='Scotres by users')  # настройка вида графика
+
+					# расстановка меток
+					for p, c, ch in zip(pos, user, all_messages_from):
+						plt.annotate(str(ch), xy=(ch + 0.05, p - 0.19), va='center')
+					for p, c, ch in zip(pos, user, all_messages_to):
+						plt.annotate(str(ch), xy=(ch + 0.05, p - 0.01), va='center')
+					for p, c, ch in zip(pos, user, all_messages_delete):
+						plt.annotate(str(ch), xy=(ch + 0.05, p + 0.165), va='center')
+					ticks = plt.yticks(pos, user)
+					xt = plt.xticks()[0]
+					plt.xticks(xt, [' '] * len(xt))
+					plt.show()  # вывод графика
 
             elif CommandNum == 14: # Exit
                 Worked = False
