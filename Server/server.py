@@ -45,6 +45,7 @@ CommandSet = [
     "Userscount", # Count of online users
     "Plot",
     "Statistic",
+	"Guiusers"
     "Exit" # Stop server
 ]
 FilterQuest = ['Reply']
@@ -924,8 +925,14 @@ def CommandInterpreter():
 					xt = plt.xticks()[0]
 					plt.xticks(xt, [' '] * len(xt))
 					plt.show()  # вывод графика
-
-            elif CommandNum == 14: # Exit
+			elif CommandNum == 14:  # GUIUsers
+                adminWindow = GUIUsers.Tk()  # Окно
+                adminWindow.geometry('700x450')  # Размер окнаа
+                adminWindow.title('Списки пользователей')  # Заголовок окна
+                adminWindow.resizable(width=False, height=False)  # Запрет на изменение размеров окна
+                obj = GUIUsers.But_print(adminWindow)
+                adminWindow.mainloop()
+            elif CommandNum == 15: # Exit
                 Worked = False
                 return
         except Exception, e:
