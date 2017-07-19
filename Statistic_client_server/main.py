@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sqlite3
+import matplotlib.animation as animation
 from matplotlib.ticker import FormatStrFormatter
 from time import sleep
 
@@ -58,59 +59,17 @@ UsersCur.close()
 n_groups = len(user_logins)
 
 #   plot
-# means_men = all_messages_from
-# means_women = all_messages_to
-# means_deleted = all_messages_delete
-# fig, ax = plt.subplots()
-#
-# index = np.arange(n_groups)
-# bar_width = 0.2
-#
-# opacity = 0.4
-# eror_config = {'ecolor': '0.3'}
-#
-# rects1 = plt.bar(index, means_men, bar_width, alpha=opacity, color='b',  error_kw=eror_config, label='From')
-# rects2 = plt.bar(index + bar_width, means_women, bar_width, alpha=opacity, color='r', error_kw=eror_config, label='To')
-# rects3 = plt.bar(index + bar_width*2, means_deleted, bar_width, alpha=opacity, color='g', error_kw=eror_config, label='Deleted')
-#
-# plt.xlabel('Users')
-# plt.ylabel('Count')
-# plt.title('Scotres by group and gender')
-# plt.xticks(index + bar_width / 2, user_logins)
-#
-# ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
-#
-# def autolabel(rects):
-#     for rect in rects:
-#         height = rect.get_height()
-#         ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
-#                 '%d' % int(height),
-#                 ha='center', va='bottom')
-#
-# autolabel(rects1)
-# autolabel(rects2)
-# autolabel(rects3)
-#
-# plt.legend()
-#
-# plt.tight_layout()
-# plt.show()
-
-
-#   plot_2
 from pandas import DataFrame
+
 
 change = all_messages_from
 messages_to = all_messages_to
 user = user_logins
 change = [[a, b, c] for a, b, c in zip(all_messages_from, all_messages_to, all_messages_delete)]
 grad = DataFrame(change, columns=['Send', 'Recieved', 'Deleted'])
-
 pos = np.arange(len(change))
 
-grad.plot(
-    kind='barh',
-    title='Scotres by users');
+grad.plot( kind='barh', title='Scotres by users')
 
 # add the numbers to the side of each bar
 for p, c, ch in zip(pos, user, all_messages_from):
@@ -125,7 +84,7 @@ ticks = plt.yticks(pos, user)
 xt = plt.xticks()[0]
 plt.xticks(xt, [' '] * len(xt))
 
-# minimize chartjunk
-plt.grid(axis='x', color='white', linestyle='-')
+def animate(i):
+
 
 plt.show()

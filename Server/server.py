@@ -856,37 +856,36 @@ def CommandInterpreter():
                 ani = animation.FuncAnimation(fig, animate, interval=1000)
                 plt.show()
             elif CommandNum == 13: # вывод статистики
-                def update_statistic(t):
-                    ids = set([x[3] for x in t]).union(set([x[4] for x in t]))
-                    # print(ids)
-                    for id in ids:
-                        user = UsersCur.execute("SELECT * FROM users WHERE id=?", str(id)).fetchone()
-                        user_login = user[0]
-                        user_id = user[6]
-                        messages_from = len(
-                            UsersCur.execute("SELECT * from messages where __From = {}".format(user_id)).fetchall())
-                        messages_to = len(
-                            UsersCur.execute("SELECT * from messages where __To = {}".format(user_id)).fetchall())
-                        messages_deleted = len(
-                            UsersCur.execute(
-                                "SELECT * from messages where (__FROM = {} and _FROM = 0) || (__TO = {} and _TO = 0)".format(
-                                    user_id,
-                                    user_id)).fetchall())
-                        print(
-                        "{:10} {:<5d} {:<8d} {:<8d}".format(user_login, messages_from, messages_to, messages_deleted))
-
-                prev_t = []
-                print("{:10} {:5} {:8} {:8}".format("USER", "SEND", "RECIEVED", "DELETED"))
-                while 1:
-                    UsersCur = UsersDB.cursor()
-                    t = UsersCur.execute("SELECT * FROM messages").fetchall()
-                    if prev_t != t:
-                        diff = list(set(t) - set(prev_t))
-                        prev_t = t
-                        update_statistic(diff)
-                        UsersCur.close()
-                    # print(t)
-                    sleep(5)
+				def update_statistic(t, UsersCur):  # получение статистик полученных/отправленных сообщений
+					ids = set([x[3] for x in t]).union(set([x[4] for x in t]))
+					# print(ids)
+					user_logins = []
+					all_messages_from = []
+					all_messages_to = []
+					all_messages_delete = []
+					print(ids)
+					for id in ids:
+						# получение статистик из бд
+						user = UsersCur.execute("SELECT * FROM users WHERE id=?",
+												(str(id),)).fetchone()  # получение списка пользователей
+						user_login = user[0]
+						user_logins.append(user_login)
+						user_id = user[7]
+						# получение количества отправленных сообщений
+						messages_from = len(UsersCur.execute("SELECT * from messages where __From = {}".format(user_id)).fetchall())
+						# получение количества принятых сообщений
+						messages_to = len(UsersCur.execute("SELECT * from messages where __To = {}".format(user_id)).fetchall())
+						# получение количества удаленных сообщений
+						messages_deleted = len(
+							UsersCur.execute(
+								"SELECT * from messages where (__FROM = {} and _FROM = 0) || (__TO = {} and _TO = 0)".format(user_id,
+																															 user_id)).fetchall())
+						print("{:10} {:<5d} {:<8d} {:<8d}".format(user_login, messages_from, messages_to, messages_deleted))
+						# запись полученных значений в массивы
+						all_messages_from.append(messages_from)
+						all_messages_to.append(messages_to)
+						all_messages_delete.append(messages_deleted)
+					return user_logins, all_messages_from, all_messages_to, all_messages_delete
 
             elif CommandNum == 14: # Exit
                 Worked = False
