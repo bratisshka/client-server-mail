@@ -22,6 +22,9 @@ from matplotlib.dates import date2num
 from matplotlib.dates import num2date
 from matplotlib.ticker import FuncFormatter
 from time import sleep
+from config import get_command, set_command
+from Server import GUIUsers
+
 
 BUFSIZ = 1024 # Размер буфера
 Worked = True # Работа сервера
@@ -30,6 +33,7 @@ OnLineClients = dict() # Список подключенных клиентов
 NewMessagesList = dict() # Новые сообщения для каждого клиента
 KEYS = None # Ключи для открытого шифрования
 CashCaptImgList = []
+IsCanConnectList = [] #Список заблокированных пользователей
 CommandSet = [
     "Debug", # Debug
     "Kick", # Kick
@@ -45,6 +49,7 @@ CommandSet = [
     "Userscount", # Count of online users
     "Plot",
     "Statistic",
+	"Guiusers"
     "Exit" # Stop server
 ]
 FilterQuest = ['Reply']
@@ -856,39 +861,82 @@ def CommandInterpreter():
                 ani = animation.FuncAnimation(fig, animate, interval=1000)
                 plt.show()
             elif CommandNum == 13: # вывод статистики
-                def update_statistic(t):
-                    ids = set([x[3] for x in t]).union(set([x[4] for x in t]))
-                    # print(ids)
-                    for id in ids:
-                        user = UsersCur.execute("SELECT * FROM users WHERE id=?", str(id)).fetchone()
-                        user_login = user[0]
-                        user_id = user[6]
-                        messages_from = len(
-                            UsersCur.execute("SELECT * from messages where __From = {}".format(user_id)).fetchall())
-                        messages_to = len(
-                            UsersCur.execute("SELECT * from messages where __To = {}".format(user_id)).fetchall())
-                        messages_deleted = len(
-                            UsersCur.execute(
-                                "SELECT * from messages where (__FROM = {} and _FROM = 0) || (__TO = {} and _TO = 0)".format(
-                                    user_id,
-                                    user_id)).fetchall())
-                        print(
-                        "{:10} {:<5d} {:<8d} {:<8d}".format(user_login, messages_from, messages_to, messages_deleted))
+				def update_statistic(t, UsersCur):  # получение статистик полученных/отправленных сообщений
+					ids = set([x[3] for x in t]).union(set([x[4] for x in t]))
+					# print(ids)
+					user_logins = []
+					all_messages_from = []
+					all_messages_to = []
+					all_messages_delete = []
+					print(ids)
+					for id in ids:
+						# получение статистик из бд
+						user = UsersCur.execute("SELECT * FROM users WHERE id=?",
+												(str(id),)).fetchone()  # получение списка пользователей
+						user_login = user[0]
+						user_logins.append(user_login)
+						user_id = user[7]
+						# получение количества отправленных сообщений
+						messages_from = len(UsersCur.execute("SELECT * from messages where __From = {}".format(user_id)).fetchall())
+						# получение количества принятых сообщений
+						messages_to = len(UsersCur.execute("SELECT * from messages where __To = {}".format(user_id)).fetchall())
+						# получение количества удаленных сообщений
+						messages_deleted = len(
+							UsersCur.execute(
+								"SELECT * from messages where (__FROM = {} and _FROM = 0) || (__TO = {} and _TO = 0)".format(user_id,
+																															 user_id)).fetchall())
+						print("{:10} {:<5d} {:<8d} {:<8d}".format(user_login, messages_from, messages_to, messages_deleted))
+						# запись полученных значений в массивы
+						all_messages_from.append(messages_from)
+						all_messages_to.append(messages_to)
+						all_messages_delete.append(messages_deleted)
+					return user_logins, all_messages_from, all_messages_to, all_messages_delete
+				def runStatistic():  # отображение статистики отправленных/полученных сообщений
+					UsersDB = sqlite3.connect("..\Server\Bin\DB\USERS.db")
+					UsersCur = UsersDB.cursor()
 
-                prev_t = []
-                print("{:10} {:5} {:8} {:8}".format("USER", "SEND", "RECIEVED", "DELETED"))
-                while 1:
-                    UsersCur = UsersDB.cursor()
-                    t = UsersCur.execute("SELECT * FROM messages").fetchall()
-                    if prev_t != t:
-                        diff = list(set(t) - set(prev_t))
-                        prev_t = t
-                        update_statistic(diff)
-                        UsersCur.close()
-                    # print(t)
-                    sleep(5)
+					prev_t = []
+					# print("{:10} {:5} {:8} {:8}".format("USER", "SEND", "RECIEVED", "DELETED"))
 
-            elif CommandNum == 14: # Exit
+					UsersCur = UsersDB.cursor()  # создание курсора
+					t = UsersCur.execute("SELECT * FROM messages").fetchall()
+					diff = list(set(t) - set(prev_t))
+					prev_t = t
+					user_logins, all_messages_from, all_messages_to, all_messages_delete = update_statistic(diff,
+																											UsersCur)  # получение статистик
+					UsersCur.close()
+
+					n_groups = len(user_logins)
+
+					from pandas import DataFrame  # формирование графика
+					change = all_messages_from
+					messages_to = all_messages_to
+					user = user_logins
+					change = [[a, b, c] for a, b, c in zip(all_messages_from, all_messages_to, all_messages_delete)]
+					grad = DataFrame(change, columns=['Send', 'Recieved', 'Deleted'])
+					pos = np.arange(len(change))
+
+					grad.plot(kind='barh', title='Scotres by users')  # настройка вида графика
+
+					# расстановка меток
+					for p, c, ch in zip(pos, user, all_messages_from):
+						plt.annotate(str(ch), xy=(ch + 0.05, p - 0.19), va='center')
+					for p, c, ch in zip(pos, user, all_messages_to):
+						plt.annotate(str(ch), xy=(ch + 0.05, p - 0.01), va='center')
+					for p, c, ch in zip(pos, user, all_messages_delete):
+						plt.annotate(str(ch), xy=(ch + 0.05, p + 0.165), va='center')
+					ticks = plt.yticks(pos, user)
+					xt = plt.xticks()[0]
+					plt.xticks(xt, [' '] * len(xt))
+					plt.show()  # вывод графика
+			elif CommandNum == 14:  # GUIUsers
+                adminWindow = GUIUsers.Tk()  # Окно
+                adminWindow.geometry('700x450')  # Размер окнаа
+                adminWindow.title('Списки пользователей')  # Заголовок окна
+                adminWindow.resizable(width=False, height=False)  # Запрет на изменение размеров окна
+                obj = GUIUsers.But_print(adminWindow)
+                adminWindow.mainloop()
+            elif CommandNum == 15: # Exit
                 Worked = False
                 return
         except Exception, e:
@@ -918,14 +966,15 @@ def main():
             UsersDB = sqlite3.connect("Bin\DB\USERS.db") # Подключение к базе данных
             UsersCur = UsersDB.cursor() # создание курсора для запросов
             UsersCur.execute('''CREATE TABLE IF NOT EXISTS Users(
-                Login TEXT,
-                Name TEXT,
-                Patronomic TEXT,
-                Surname TEXT,
-                Password TEXT,
-                Friends TEXT,
-                id INTEGER PRIMARY KEY
-            )''') # Создание таблицы пользователей, если ее не было
+                            Login TEXT,
+                            Name TEXT,
+                            Patronomic TEXT,
+                            Surname TEXT,
+                            Password TEXT,
+                            Friends TEXT,
+                            ConConection BOOLEAN DEFAULT 1,
+                            id INTEGER PRIMARY KEY
+                        )''')  # Создание таблицы пользователей, если ее не было
             UsersCur.execute('''CREATE TABLE IF NOT EXISTS Messages(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 _From INTEGER,
