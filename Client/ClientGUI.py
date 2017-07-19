@@ -1,4 +1,5 @@
-﻿from Tkinter import *
+﻿# coding=utf-8
+from Tkinter import *
 import ttk
 import Tix
 import time
@@ -1735,7 +1736,6 @@ class GUI(ttk.Frame):
             self._disconnect_event()  # Разрываем соединение
 
     # Выход
-    #
     def LogOut(self):
         try:
             self.StopCheckTimer = True  # Остоновим таймер проверки соединения
@@ -1816,26 +1816,29 @@ class GUI(ttk.Frame):
             # Возможны варианты
             # NO в случае неудачи
             # открытый ключ [<PUBLICKEY>] в случае удачной авторизации
-            if req != 'NO':  # Положительный ответ
-                self.PUBLICKEY = req  # Сохраним публичный ключ сервера
-
-                SendData(self.KEYS[0])  # Отправим публичный ключ клиента серверу
-
-                self.Connected = True
-                self.after(1000, self.CheckConnection)  # Вешаем проверку соединения в отдельный поток
-                self.CommandQueue.put(("OpenGT", 0), True)  # Откроем главное окно
-                self.StatusLabel1['text'] = ''
-                return
-            # Не авторищирован - разрываем соединение
-            SendQuestion('Exit')
-            CloseSocket()
-            self.StatusLabel1['foreground'] = 'red'
             if req == 'NO':
                 self.PasswordEdit.delete(0, END)
                 self._edit_change_1(None)
                 self.StatusLabel1['text'] = 'Неверное имя или пароль'
             else:
-                self.StatusLabel1['text'] = 'Сервер недоступен'
+                if req == 'BANNED':
+                    self.PasswordEdit.delete(0, END)
+                    self._edit_change_1(None)
+                    self.StatusLabel1['text'] = 'Вы заблокированы'
+                else:  # Положительный ответ
+                    self.PUBLICKEY = req  # Сохраним публичный ключ сервера
+
+                    SendData(self.KEYS[0])  # Отправим публичный ключ клиента серверу
+
+                    self.Connected = True
+                    self.after(1000, self.CheckConnection)  # Вешаем проверку соединения в отдельный поток
+                    self.CommandQueue.put(("OpenGT", 0), True)  # Откроем главное окно
+                    self.StatusLabel1['text'] = ''
+                    return
+            # Не авторищирован - разрываем соединение
+            SendQuestion('Exit')
+            CloseSocket()
+            self.StatusLabel1['foreground'] = 'red'
             return
         except Exception, e:
             showerror("Ошибка", e.args)
