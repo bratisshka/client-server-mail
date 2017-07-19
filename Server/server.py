@@ -51,11 +51,8 @@ CommandSet = [
     "Clearfilter", # Clear filter
     "Help", # Help for commands
     "Userscount", # Count of online users
-    "Plot",
-    "Statistic",
-	"Guiusers"
+	"Admin",
     "Exit", # Stop server
-	"Admin"
 ]
 FilterQuest = ['Reply']
 CashSize = 10
@@ -944,120 +941,10 @@ def CommandInterpreter():
                     print CommandSet[i], DescrComm[i]
             elif CommandNum == 11: # Count online users
                 print len(OnLineClients)
-            elif CommandNum == 12: # Plot (Рисвоание графика)
-                fig = plt.figure(edgecolor = 'g')
-                Axis = fig.add_subplot(1, 1, 1)
-                time_interval = 60
-                XVal = [date2num(datetime.datetime.now() + datetime.timedelta(seconds = i)) for i in range(0, time_interval)]
-                YVal = [[0] * time_interval, [0] * time_interval]
-                def format_function(x, pos=None):
-                     x = num2date(x)
-                     label = x.strftime('%H:%M:%S.%f')
-                     label = label.rstrip("0")
-                     label = label.rstrip(".")
-                     return label
-                def animate(i):
-                    global tmpBytesCount
-                    if i % time_interval == 0:
-                        for j in range(0, time_interval):
-                            XVal[j] = date2num(datetime.datetime.now() + datetime.timedelta(seconds = j))
-                            YVal[0][j] = 0
-                            YVal[1][j] = 0
-                    YVal[0][i % time_interval] = tmpBytesCount[0]
-                    YVal[1][i % time_interval] = tmpBytesCount[1]
-                    tmpBytesCount = [0, 0]
-                    Axis.clear()
-                    Axis.plot_date(XVal, YVal[0], "r-", label = "INPUT")
-                    Axis.plot(XVal[0], [0], "b-", label = "CONNECTIONS: " + str(len(OnLineClients)))
-                    Axis.plot_date(XVal, YVal[1], "g--", label = "OUTPUT")
-                    Axis.xaxis.set_major_formatter(FuncFormatter(format_function))
-                    plt.ylim(ymin=0)
-                    Axis.legend(loc=u'upper center',
-                      mode='expand',
-                      borderaxespad=0,
-                      ncol=3)
-                ani = animation.FuncAnimation(fig, animate, interval=1000)
-                plt.show()
-            elif CommandNum == 13: # вывод статистики
-				def update_statistic(t, UsersCur):  # получение статистик полученных/отправленных сообщений
-					ids = set([x[3] for x in t]).union(set([x[4] for x in t]))
-					# print(ids)
-					user_logins = []
-					all_messages_from = []
-					all_messages_to = []
-					all_messages_delete = []
-					print(ids)
-					for id in ids:
-						# получение статистик из бд
-						user = UsersCur.execute("SELECT * FROM users WHERE id=?",
-												(str(id),)).fetchone()  # получение списка пользователей
-						user_login = user[0]
-						user_logins.append(user_login)
-						user_id = user[7]
-						# получение количества отправленных сообщений
-						messages_from = len(UsersCur.execute("SELECT * from messages where __From = {}".format(user_id)).fetchall())
-						# получение количества принятых сообщений
-						messages_to = len(UsersCur.execute("SELECT * from messages where __To = {}".format(user_id)).fetchall())
-						# получение количества удаленных сообщений
-						messages_deleted = len(
-							UsersCur.execute(
-								"SELECT * from messages where (__FROM = {} and _FROM = 0) || (__TO = {} and _TO = 0)".format(user_id,
-																															 user_id)).fetchall())
-						print("{:10} {:<5d} {:<8d} {:<8d}".format(user_login, messages_from, messages_to, messages_deleted))
-						# запись полученных значений в массивы
-						all_messages_from.append(messages_from)
-						all_messages_to.append(messages_to)
-						all_messages_delete.append(messages_deleted)
-					return user_logins, all_messages_from, all_messages_to, all_messages_delete
-				def runStatistic():  # отображение статистики отправленных/полученных сообщений
-					UsersDB = sqlite3.connect("..\Server\Bin\DB\USERS.db")
-					UsersCur = UsersDB.cursor()
-
-					prev_t = []
-					# print("{:10} {:5} {:8} {:8}".format("USER", "SEND", "RECIEVED", "DELETED"))
-
-					UsersCur = UsersDB.cursor()  # создание курсора
-					t = UsersCur.execute("SELECT * FROM messages").fetchall()
-					diff = list(set(t) - set(prev_t))
-					prev_t = t
-					user_logins, all_messages_from, all_messages_to, all_messages_delete = update_statistic(diff,
-																											UsersCur)  # получение статистик
-					UsersCur.close()
-
-					n_groups = len(user_logins)
-
-					from pandas import DataFrame  # формирование графика
-					change = all_messages_from
-					messages_to = all_messages_to
-					user = user_logins
-					change = [[a, b, c] for a, b, c in zip(all_messages_from, all_messages_to, all_messages_delete)]
-					grad = DataFrame(change, columns=['Send', 'Recieved', 'Deleted'])
-					pos = np.arange(len(change))
-
-					grad.plot(kind='barh', title='Scotres by users')  # настройка вида графика
-
-					# расстановка меток
-					for p, c, ch in zip(pos, user, all_messages_from):
-						plt.annotate(str(ch), xy=(ch + 0.05, p - 0.19), va='center')
-					for p, c, ch in zip(pos, user, all_messages_to):
-						plt.annotate(str(ch), xy=(ch + 0.05, p - 0.01), va='center')
-					for p, c, ch in zip(pos, user, all_messages_delete):
-						plt.annotate(str(ch), xy=(ch + 0.05, p + 0.165), va='center')
-					ticks = plt.yticks(pos, user)
-					xt = plt.xticks()[0]
-					plt.xticks(xt, [' '] * len(xt))
-					plt.show()  # вывод графика
-			elif CommandNum == 14:  # GUIUsers
-                adminWindow = GUIUsers.Tk()  # Окно
-                adminWindow.geometry('700x450')  # Размер окнаа
-                adminWindow.title('Списки пользователей')  # Заголовок окна
-                adminWindow.resizable(width=False, height=False)  # Запрет на изменение размеров окна
-                obj = GUIUsers.But_print(adminWindow)
-                adminWindow.mainloop()
             elif CommandNum == 15: # Exit
                 Worked = False
                 return
-			elif CommandNum == 16:  # test
+			elif CommandNum == 12:  # Admin
                 # запускаем параллельные процессы, по документации необходимо, чтобы функции были в корне
                 # tmpBytesCount задаются через multiprocessing.Manager для обмена данными между процессами
                 t = multiprocessing.Process(target=runPlot, args=(tmpBytesCount,))
