@@ -955,14 +955,15 @@ def main():
             UsersDB = sqlite3.connect("Bin\DB\USERS.db") # Подключение к базе данных
             UsersCur = UsersDB.cursor() # создание курсора для запросов
             UsersCur.execute('''CREATE TABLE IF NOT EXISTS Users(
-                Login TEXT,
-                Name TEXT,
-                Patronomic TEXT,
-                Surname TEXT,
-                Password TEXT,
-                Friends TEXT,
-                id INTEGER PRIMARY KEY
-            )''') # Создание таблицы пользователей, если ее не было
+                            Login TEXT,
+                            Name TEXT,
+                            Patronomic TEXT,
+                            Surname TEXT,
+                            Password TEXT,
+                            Friends TEXT,
+                            ConConection BOOLEAN DEFAULT 1,
+                            id INTEGER PRIMARY KEY
+                        )''')  # Создание таблицы пользователей, если ее не было
             UsersCur.execute('''CREATE TABLE IF NOT EXISTS Messages(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 _From INTEGER,
