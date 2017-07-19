@@ -22,6 +22,9 @@ from matplotlib.dates import date2num
 from matplotlib.dates import num2date
 from matplotlib.ticker import FuncFormatter
 from time import sleep
+from config import get_command, set_command
+from Server import GUIUsers
+
 
 BUFSIZ = 1024 # Размер буфера
 Worked = True # Работа сервера
@@ -30,6 +33,7 @@ OnLineClients = dict() # Список подключенных клиентов
 NewMessagesList = dict() # Новые сообщения для каждого клиента
 KEYS = None # Ключи для открытого шифрования
 CashCaptImgList = []
+IsCanConnectList = [] #Список заблокированных пользователей
 CommandSet = [
     "Debug", # Debug
     "Kick", # Kick
