@@ -57,7 +57,6 @@ CommandSet = [
 FilterQuest = ['Reply']
 CashSize = 10
 ClientCommand = ("", 0)
-tmpBytesCount = [0, 0]
 
 def Gentext(MaxSize):
     tmp = []
@@ -1089,5 +1088,7 @@ def main():
         print 'Stop server.'
         if tcpSerSock:
             tcpSerSock.close() # Закрытие сокета сервера
-
-main()
+if __name__ == "__main__"
+	manager = Manager()  # Manager для multiprocessing
+    tmpBytesCount = manager.dict({"0": 0, "1": 0})
+	main()
